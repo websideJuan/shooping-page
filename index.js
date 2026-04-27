@@ -155,10 +155,10 @@ document.addEventListener("DOMContentLoaded", function () {
       <li class="cart-item" data-id=${cartItem.id}>
         <img
           src='${cartItem.image}'
-          alt="${cartItem.nameProduct}"
+          alt="${cartItem.title}"
         />
         <div class="cart-list-product">
-          <h5>${cartItem.nameProduct}</h5>
+          <h5>${cartItem.title}</h5>
           <p>${cartItem.price * cartItem.count}</p>
 
           <div class="cart-item-product">
@@ -261,7 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Object.values(cartItem).length === 0)
           return showToastMessage("cart empty");
 
-        const telefono = "56929506465"; // Número de la tienda
+        const telefono = "56929506564"; // Número de la tienda
         const mensaje = "Hola! estoy interesado en este articulo! " + JSON.stringify(cartItem.namesOfProducts);
         const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
         window.open(url, "_blank");
