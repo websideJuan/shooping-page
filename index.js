@@ -62,26 +62,26 @@ document.addEventListener("DOMContentLoaded", function () {
         const cardProduct = document.createElement("div");
         cardProduct.classList.add("card-product");
         cardProduct.innerHTML = `
-      <div class="card-img" >
-        <img src="${cardProductItem.image}" />
-      </div>
-      <div class="card-body">
-        <span style="color: lightgray">${cardProductItem.category}</span>
-        <h4>${cardProductItem.title}</h4>
-        
-        <p class="card-price" style="color: rosybrown; font-weight: bold; font-size: 20px;">${cardProductItem.price}</p>
-      </div>
-      <div class="card-footer" >
-        <button class="card-btn-add" data-id="${cardProductItem.id}">
-          Añadir al carrito
-        </button>
-        <button style="border: none; border-radius: 8px">
-          <span>
-            <i class="fa-regular fa-heart"></i>
-          </span>
-        </button>
-      </div>
-    `;
+          <div class="card-img" >
+            <img src="${cardProductItem.image}" />
+          </div>
+          <div class="card-body">
+            <span style="color: lightgray">${cardProductItem.category}</span>
+            <h4>${cardProductItem.title}</h4>
+            
+            <p class="card-price" style="color: rosybrown; font-weight: bold; font-size: 20px;">${cardProductItem.price}</p>
+          </div>
+          <div class="card-footer" >
+            <button class="card-btn-add" data-id="${cardProductItem.id}">
+              Añadir al carrito
+            </button>
+            <button style="border: none; border-radius: 8px">
+              <span>
+                <i class="fa-regular fa-heart"></i>
+              </span>
+            </button>
+          </div>
+        `;
         productContainer.appendChild(cardProduct);
       });
   };
@@ -98,19 +98,26 @@ document.addEventListener("DOMContentLoaded", function () {
           .forEach((b) => b.classList.remove("active"));
         productBtnCategory.classList.add("active");
         renderProductItem(filter);
+        addItemToCart();
       }),
     );
 
-  document.querySelectorAll(".card-btn-add").forEach((btnToAdd, i) =>
-    btnToAdd.addEventListener("click", function (e) {
-      btnToAdd.style.backgroundColor = "rosybrown";
-      addToCart(e.target.dataset.id);
+  const addItemToCart = () => {
+    document.querySelectorAll(".card-btn-add").forEach((btnToAdd, i) =>
+      btnToAdd.addEventListener("click", function (e) {
+        btnToAdd.style.backgroundColor = "rosybrown";
+        addToCart(e.target.dataset.id);
 
-      setTimeout(() => {
-        btnToAdd.style.backgroundColor = "#333";
-      }, 2000);
-    }),
-  );
+        console.log("click to add cart btn");
+
+        setTimeout(() => {
+          btnToAdd.style.backgroundColor = "#333";
+        }, 2000);
+      }),
+    );
+  };
+
+  addItemToCart();
 
   const addToCart = (id, cartItem) => {
     const indexProduct = cart.findIndex((product) => product.id === id);
@@ -192,9 +199,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     actionCart(document.querySelectorAll(".cart-btn-control"));
     deleteCartItem(document.querySelectorAll(".cart-delete-item"));
-    contatcForWstpp({
-      namesOfProducts: cart.reduce((acc, current) => acc.push(current.title), [])
-    });
+
+    contatcForWstpp(cart);
   };
 
   const actionCart = (cartElements) => {
@@ -261,12 +267,28 @@ document.addEventListener("DOMContentLoaded", function () {
         if (Object.values(cartItem).length === 0)
           return showToastMessage("cart empty");
 
-        const telefono = "56929506564"; // Número de la tienda
-        const mensaje = "Hola! estoy interesado en este articulo! " + JSON.stringify(cartItem.namesOfProducts);
+        const productList = cart.map((product) => `- ${product.title}`);
+        const totalCartProduct = cart.reduce(
+          (acc, current) => acc + Number(current.price) * current.count,
+          0,
+        );
+
+        const totalCartProductIVA = totalCartProduct * 1.19;
+        const formatCLP = (num) => num.toFixed(2);
+
+        const telefono = "56929506564";
+        const mensaje = `
+        *Hola estoy interesado en comprar!*
+
+        ${productList.length < 2 ? "Producto" : "Productos"}:
+        ${productList.join("\n")}
+
+        *Total sin IVA: ${formatCLP(totalCartProduct)}*
+        *Total: ${formatCLP(totalCartProductIVA)}*
+        `;
+
         const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
         window.open(url, "_blank");
       });
   };
-
-  contatcForWstpp();
 });
