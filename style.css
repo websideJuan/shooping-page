@@ -44,14 +44,18 @@ button {
   justify-content: center;
   align-items: end;
   padding-bottom: 20px;
-  z-index: 999;
+  z-index: 9999;
+}
+
+.toast.confirm {
+  pointer-events: all;
 }
 
 .toast-content {
   background-color: var(--primary-color);
   color: var(--text-primary-color);
   width: 90%;
-  max-width: 300px;
+  max-width: 400px;
   padding: 25px 0;
   border-radius: 10px;
   font-size: 22px;

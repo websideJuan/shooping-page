@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentContainer = 0;
   let cart = [];
 
+  const toast = Toast();
+
   function showCurrentContainer() {
     heroCarouselContainers.forEach((heroContainer) =>
       heroContainer.classList.remove("active"),
@@ -108,8 +110,6 @@ document.addEventListener("DOMContentLoaded", function () {
         btnToAdd.style.backgroundColor = "rosybrown";
         addToCart(e.target.dataset.id);
 
-        console.log("click to add cart btn");
-
         setTimeout(() => {
           btnToAdd.style.backgroundColor = "#333";
         }, 2000);
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", function () {
       message = product.title;
     }
     renderCartItem(cart);
-    showToastMessage(message);
+    toast.message(message);
   };
 
   const renderCartItem = (cart) => {
@@ -244,28 +244,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   };
 
-  const showToastMessage = (message) => {
-    const toast = document.createElement("div");
-    toast.classList.add("toast");
-    toast.innerHTML = `
-      <div class="toast-content">
-        <h5>${message}<h5>
-      <div>
-    `;
-
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 2000);
-  };
-
   const contatcForWstpp = (cartItem = {}) => {
     document
       .querySelector("#finaly-shopping")
-      .addEventListener("click", function () {
+      .addEventListener("click", async function () {
         if (Object.values(cartItem).length === 0)
-          return showToastMessage("cart empty");
+          return toast.message("cart empty");
+
+        const result = await toast.confirm("Excelente!, Cual es tu nombre?");
+
+        if (!result.confirm) return;
+        console.log(result.value);
+
+        
 
         const productList = cart.map((product) => `- ${product.title}`);
         const totalCartProduct = cart.reduce(
@@ -278,7 +269,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const telefono = "56929506564";
         const mensaje = `
-        *Hola estoy interesado en comprar!*
+        *Hola soy ${result.value} y estoy interesado en comprar!*
 
         ${productList.length < 2 ? "Producto" : "Productos"}:
         ${productList.join("\n")}
