@@ -69,15 +69,15 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
           <div class="card-body">
             <span style="color: lightgray">${cardProductItem.category}</span>
-            <h4>${cardProductItem.title}</h4>
+            <h4>${cardProductItem.title.length > 10 ? cardProductItem.title.slice(0, 10).concat("...") : cardProductItem.title}</h4>
             
-            <p class="card-price" style="color: rosybrown; font-weight: bold; font-size: 20px;">${cardProductItem.price}</p>
+            <p class="card-price" style="color: rosybrown; font-size: 20px;">$ ${cardProductItem.price.toLocaleString()}</p>
           </div>
           <div class="card-footer" >
             <button class="card-btn-add" data-id="${cardProductItem.id}">
-              Añadir al carrito
+              Añadir
             </button>
-            <button style="border: none; border-radius: 999px">
+            <button class="card-btn-like" >
               <span>
                 <i class="fa-regular fa-heart"></i>
               </span>
@@ -107,11 +107,13 @@ document.addEventListener("DOMContentLoaded", function () {
     if (e.target.classList.contains("card-btn-add")) {
       const btnToAdd = e.target;
       btnToAdd.style.backgroundColor = "rosybrown";
+      btnToAdd.style.color = "white";
       addToCart(e.target.dataset.id);
       console.log(cart.length);
-      
+
       setTimeout(() => {
-        btnToAdd.style.backgroundColor = "#333";
+        btnToAdd.style.backgroundColor = "transparent";
+        btnToAdd.style.color = "#333";
       }, 2000);
     }
   });
@@ -156,6 +158,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const listCartProduct = document.createElement("ul");
     cartBody.innerHTML = "";
     cart.forEach((cartItem) => {
+      console.log(cartItem.price);
+
       listCartProduct.innerHTML += ` 
       <li class="cart-item" data-id=${cartItem.id}>
         <img
@@ -164,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
         />
         <div class="cart-list-product">
           <h5>${cartItem.title}</h5>
-          <p>${cartItem.price * cartItem.count}</p>
+          <p>${cartItem.price.toLocaleString()}</p>
 
           <div class="cart-item-product">
             <button class="cart-btn-control" data-control="remove">
@@ -188,13 +192,11 @@ document.addEventListener("DOMContentLoaded", function () {
       </li>`;
     });
     cartBody.appendChild(listCartProduct);
-
-    cart.length <= 0
-      ? (totalProductsCart.textContent = 0)
-      : (totalProductsCart.textContent = [
-          ...document.querySelectorAll(".cart-item p"),
-        ].reduce((acc, current) => acc + Number(current.textContent), 0));
-
+    totalProductsCart.innerHTML = cart.reduce(
+      (acc, current) => acc + current.price * current.count,
+      0,
+    ).toLocaleString()
+  
     actionCart(document.querySelectorAll(".cart-btn-control"));
     deleteCartItem(document.querySelectorAll(".cart-delete-item"));
     contatcForWstpp(cart);
@@ -252,13 +254,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!result.confirm) return;
 
         const productList = cart.map((product) => `- ${product.title}`);
-        const totalCartProduct = cart.reduce(
+        const subTotal = cart.reduce(
           (acc, current) => acc + Number(current.price) * current.count,
           0,
         );
 
-        const totalCartProductIVA = totalCartProduct * 1.19;
-        const formatCLP = (num) => num.toFixed(2);
+        const total = subTotal * 1.19;
+        // const formatCLP = (num) => num.toFixed(6);
 
         const telefono = "56929506564";
         const mensaje = `
@@ -267,8 +269,8 @@ document.addEventListener("DOMContentLoaded", function () {
         ${productList.length < 2 ? "Producto" : "Productos"}:
         ${productList.join("\n")}
 
-        *Total sin IVA: ${formatCLP(totalCartProduct)}*
-        *Total: ${formatCLP(totalCartProductIVA)}*
+        *Total sin IVA: ${subTotal}*
+        *Total: ${total}*
         `;
 
         const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
