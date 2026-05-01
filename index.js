@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <button class="card-btn-add" data-id="${cardProductItem.id}">
               Añadir al carrito
             </button>
-            <button style="border: none; border-radius: 8px">
+            <button style="border: none; border-radius: 999px">
               <span>
                 <i class="fa-regular fa-heart"></i>
               </span>
@@ -100,43 +100,41 @@ document.addEventListener("DOMContentLoaded", function () {
           .forEach((b) => b.classList.remove("active"));
         productBtnCategory.classList.add("active");
         renderProductItem(filter);
-        addItemToCart();
       }),
     );
 
-  const addItemToCart = () => {
-    document.querySelectorAll(".card-btn-add").forEach((btnToAdd, i) =>
-      btnToAdd.addEventListener("click", function (e) {
-        btnToAdd.style.backgroundColor = "rosybrown";
-        addToCart(e.target.dataset.id);
+  document.querySelector(".product").addEventListener("click", function (e) {
+    if (e.target.classList.contains("card-btn-add")) {
+      const btnToAdd = e.target;
+      btnToAdd.style.backgroundColor = "rosybrown";
+      addToCart(e.target.dataset.id);
+      console.log(cart.length);
+      
+      setTimeout(() => {
+        btnToAdd.style.backgroundColor = "#333";
+      }, 2000);
+    }
+  });
 
-        setTimeout(() => {
-          btnToAdd.style.backgroundColor = "#333";
-        }, 2000);
-      }),
-    );
-  };
-
-  addItemToCart();
-
-  const addToCart = (id, cartItem) => {
+  const addToCart = (id) => {
     const indexProduct = cart.findIndex((product) => product.id === id);
     const product = productsDatabase.find((product) => product.id === id);
 
-    let message = "";
-
     if (indexProduct !== -1) {
       cart[indexProduct].count = cart[indexProduct].count + 1;
-      message = "update cart";
     } else {
       cart.push({
         ...product,
         count: 1,
       });
-      message = product.title;
     }
+
     renderCartItem(cart);
-    toast.message(message);
+    document.getElementById("btn-cart").classList.add("cart-index-item");
+    document.getElementById("btn-cart").setAttribute("data-index", cart.length);
+    toast.message(
+      `${product.title} ${indexProduct !== -1 ? product.count : ""}`,
+    );
   };
 
   const renderCartItem = (cart) => {
@@ -199,7 +197,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     actionCart(document.querySelectorAll(".cart-btn-control"));
     deleteCartItem(document.querySelectorAll(".cart-delete-item"));
-
     contatcForWstpp(cart);
   };
 
@@ -244,19 +241,15 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   };
 
-  const contatcForWstpp = (cartItem = {}) => {
+  const contatcForWstpp = (cart) => {
     document
       .querySelector("#finaly-shopping")
       .addEventListener("click", async function () {
-        if (Object.values(cartItem).length === 0)
-          return toast.message("cart empty");
+        if (cart.length === 0) return toast.message("cart empty");
 
         const result = await toast.confirm("Excelente!, Cual es tu nombre?");
 
         if (!result.confirm) return;
-        console.log(result.value);
-
-        
 
         const productList = cart.map((product) => `- ${product.title}`);
         const totalCartProduct = cart.reduce(

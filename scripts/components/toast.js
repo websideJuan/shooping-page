@@ -37,6 +37,7 @@ const Toast = () => ({
       this.toast.addEventListener("click", (e) => {
         if (e.target.id === "confirm") {
           this.toast.remove();
+          this.toast.classList.remove('confirm')
           resolve({
             confirm: true,
             value: e.target.closest(".toast").querySelector("#nameuser").value,
@@ -45,6 +46,7 @@ const Toast = () => ({
 
         if (e.target.id === "cancel") {
           this.toast.remove();
+          this.toast.classList.remove('confirm')
           resolve({
             confirm: false,
           });
