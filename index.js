@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const heroCarouselContainers = document.querySelectorAll(
     ".hero-carousel-container",
   );
-  const carouselDots = document.querySelectorAll('.dot')
+  const carouselDots = document.querySelectorAll(".dot");
 
   let currentContainer = 1;
   let cart = [];
@@ -16,14 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
       heroContainer.classList.remove("active"),
     );
 
-    carouselDots.forEach(dot => dot.classList.remove('active'))
+    carouselDots.forEach((dot) => dot.classList.remove("active"));
 
     if (heroCarouselContainers.length <= currentContainer) {
       currentContainer = 0;
     }
 
     heroCarouselContainers[currentContainer].classList.add("active");
-    carouselDots[currentContainer].classList.add('active')
+    carouselDots[currentContainer].classList.add("active");
     currentContainer++;
   }
 
@@ -55,10 +55,12 @@ document.addEventListener("DOMContentLoaded", function () {
       cartCollapse.style.transitionDelay = ".6s";
       cartCollapse.children[0].style.transitionDelay = ".0s";
       cartCollapse.classList.remove("show");
+      document.body.style.overflowY = "auto";
     } else {
       cartCollapse.style.transitionDelay = ".0s";
       cartCollapse.children[0].style.transitionDelay = ".6s";
       cartCollapse.classList.add("show");
+      document.body.style.overflowY = "hidden";
     }
   }
 
@@ -129,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
       btnToAdd.style.backgroundColor = "rosybrown";
       btnToAdd.style.color = "white";
       addToCart(e.target.dataset.id);
-      console.log(cart.length);
 
       setTimeout(() => {
         btnToAdd.style.backgroundColor = "transparent";
@@ -152,11 +153,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     renderCartItem(cart);
-    document.getElementById("btn-cart").classList.add("cart-index-item");
-    document.getElementById("btn-cart").setAttribute("data-index", cart.length);
-    toast.message(
-      `${product.title} ${indexProduct !== -1 ? product.count : ""}`,
-    );
+
+    toast.message(`${product.title}`);
   };
 
   const renderCartItem = (cartItems) => {
@@ -189,8 +187,8 @@ document.addEventListener("DOMContentLoaded", function () {
           alt="${cartItem.title}"
         />
         <div class="cart-list-product">
-          <h5>${cartItem.title}</h5>
-          <p>${cartItem.price.toLocaleString()}</p>
+          <h5 style="font-size: .8rem; font-weight: thin;">${cartItem.title}</h5>
+          <p>${(cartItem.price * cartItem.count).toLocaleString()} <span style="color: #333; font-weight: 300; letter-spacing: 2px;">(X${cartItem.count})</span></p>
 
           <div class="cart-item-product">
             <button class="cart-btn-control ${cartItem.count === 1 ? "inactive" : ""}" data-control="remove">
@@ -221,6 +219,14 @@ document.addEventListener("DOMContentLoaded", function () {
       .reduce((acc, current) => acc + current.price * current.count, 0)
       .toLocaleString();
 
+    const btnCartShow = document.getElementById("btn-cart");
+
+    cartItems.length <= 0
+      ? btnCartShow.classList.remove("cart-index-item")
+      : btnCartShow.classList.add("cart-index-item");
+
+    btnCartShow.setAttribute("data-index", cartItems.length);
+
     actionCart(document.querySelectorAll(".cart-btn-control"));
     deleteCartItem(document.querySelectorAll(".cart-delete-item"));
     contatcForWstpp(cartItems);
@@ -228,7 +234,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const actionCart = (cartElements) => {
     cartElements.forEach((btnControl) => {
-      const btnRemove = cartElements[0];
       btnControl.addEventListener("click", function (e) {
         const element = e.target.closest(".cart-item");
         const dataControl = btnControl.getAttribute("data-control");
@@ -237,7 +242,6 @@ document.addEventListener("DOMContentLoaded", function () {
             (cartItem) => cartItem.id === element.dataset.id,
           );
 
-          btnRemove.classList.remove("inactive");
           cart[indexCartItem].count++;
         }
 
@@ -245,10 +249,6 @@ document.addEventListener("DOMContentLoaded", function () {
           const indexCartItem = cart.findIndex(
             (cartItem) => cartItem.id === element.dataset.id,
           );
-
-          if (cart[indexCartItem].count === 1) {
-            return classList.add("inactive");
-          }
           cart[indexCartItem].count--;
         }
 
@@ -261,7 +261,9 @@ document.addEventListener("DOMContentLoaded", function () {
     cartDeleteItem.forEach((btnDeleteCart) => {
       btnDeleteCart.addEventListener("click", function (e) {
         const liCartItem = e.target.closest(".cart-item");
-        const indexCartItem = cart.indexOf(liCartItem.id);
+        const indexCartItem = cart.findIndex(
+          (cartItem) => cartItem.id === liCartItem.dataset.id,
+        );
         cart.splice(indexCartItem, 1);
         renderCartItem(cart);
       });
@@ -274,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
       .addEventListener("click", async function () {
         if (cart.length === 0) return toast.message("cart empty");
 
-        const result = await toast.confirm("Excelente!, Cual es tu nombre?");
+        const result = await toast.confirm("Excelente!\n, Cual es tu nombre?");
 
         if (!result.confirm) return;
 
@@ -285,7 +287,6 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
         const total = subTotal * 1.19;
-        // const formatCLP = (num) => num.toFixed(6);
 
         const telefono = "56929506564";
         const mensaje = `
@@ -294,8 +295,8 @@ document.addEventListener("DOMContentLoaded", function () {
         ${productList.length < 2 ? "Producto" : "Productos"}:
         ${productList.join("\n")}
 
-        *Total sin IVA: ${subTotal}*
-        *Total: ${total}*
+        Total sin IVA: *${subTotal.toLocaleString()}*
+        Total: *${total.toLocaleString()}*
         `;
 
         const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;

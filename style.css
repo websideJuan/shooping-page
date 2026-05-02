@@ -205,6 +205,7 @@ button.navbar-toggle.toggle-active .navbar-toggle-icon:nth-child(3) {
   display: flex;
   justify-content: end;
   /*Inithial state*/
+  z-index: 110;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.5s ease-in;
@@ -213,7 +214,7 @@ button.navbar-toggle.toggle-active .navbar-toggle-icon:nth-child(3) {
 .cart-content {
   padding: 20px 15px;
   background-color: #fff;
-  width: 85%;
+  width: 95%;
   height: 100%;
 
   display: grid;
@@ -519,16 +520,17 @@ button.navbar-toggle.toggle-active .navbar-toggle-icon:nth-child(3) {
 .product-category {
   margin: 60px 0;
   display: flex;
-  gap: 25px;
+  gap: 15px 25px;
 }
 
 .product-btn-category {
   border-radius: 20px;
-  border: 1px solid;
+  border: 1px solid var(--text-primary-color);
   background-color: transparent;
-  color: var(--text-primary-color);
+  color: #333;
   background-color: lightgrey;
   padding: 10px 24px;
+  font-weight: 400;
 }
 
 .product-btn-category.active {
