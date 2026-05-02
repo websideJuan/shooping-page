@@ -48,14 +48,14 @@ document.addEventListener("DOMContentLoaded", function () {
   function showCart() {
     const cartCollapse = document.getElementById("cart-collapse");
     if (cartCollapse.classList.contains("show")) {
-      cartCollapse.style.transitionDelay = '.6s'
-      cartCollapse.children[0].style.transitionDelay = '.0s'
+      cartCollapse.style.transitionDelay = ".6s";
+      cartCollapse.children[0].style.transitionDelay = ".0s";
       cartCollapse.classList.remove("show");
     } else {
       console.log(cartCollapse.children[0].style);
-      
-      cartCollapse.style.transitionDelay = '.0s'
-      cartCollapse.children[0].style.transitionDelay = '.6s'
+
+      cartCollapse.style.transitionDelay = ".0s";
+      cartCollapse.children[0].style.transitionDelay = ".6s";
       cartCollapse.classList.add("show");
     }
   }
@@ -261,6 +261,14 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("#finaly-shopping")
       .addEventListener("click", async function () {
         if (cart.length === 0) return toast.message("cart empty");
+        if ((!"geolocation") in navigator) {
+          return alert(
+            "Tu navegador no soporta el acceso a la ubicación. Intenta con otro",
+          );
+        }
+
+        
+
 
         const result = await toast.confirm("Excelente!, Cual es tu nombre?");
 
