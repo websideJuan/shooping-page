@@ -4,8 +4,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const heroCarouselContainers = document.querySelectorAll(
     ".hero-carousel-container",
   );
+  const carouselDots = document.querySelectorAll('.dot')
 
-  let currentContainer = 0;
+  let currentContainer = 1;
   let cart = [];
 
   const toast = Toast();
@@ -15,11 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
       heroContainer.classList.remove("active"),
     );
 
+    carouselDots.forEach(dot => dot.classList.remove('active'))
+
     if (heroCarouselContainers.length <= currentContainer) {
       currentContainer = 0;
     }
 
     heroCarouselContainers[currentContainer].classList.add("active");
+    carouselDots[currentContainer].classList.add('active')
     currentContainer++;
   }
 
@@ -52,19 +56,19 @@ document.addEventListener("DOMContentLoaded", function () {
       cartCollapse.children[0].style.transitionDelay = ".0s";
       cartCollapse.classList.remove("show");
     } else {
-      console.log(cartCollapse.children[0].style);
-
       cartCollapse.style.transitionDelay = ".0s";
       cartCollapse.children[0].style.transitionDelay = ".6s";
       cartCollapse.classList.add("show");
     }
   }
 
-  const renderProductItem = (filter = "men's clothing") => {
+  const renderProductItem = (filter = "all") => {
     const productContainer = document.querySelector("#container-product");
     productContainer.innerHTML = "";
     productsDatabase
-      .filter((product) => product.category === filter)
+      .filter((product) =>
+        filter === "all" ? product : product.category === filter,
+      )
       .forEach((cardProductItem) => {
         const cardProduct = document.createElement("div");
         cardProduct.classList.add("card-product");
@@ -83,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <p style="position: absolute; top: 10px; left: 10px; background-color: red; color: white; padding: 3px 10px; font-weight: boldx">
                     ${`${cardProductItem.discount}%`}
                   </p>
-                  <p class="card-price" style="text-align: center; text-decoration: line-through;">
+                  <p class="card-price" style="text-align: end; text-decoration: line-through;">
                     ${cardProductItem.price.toLocaleString()}
                   </p>
                 `
@@ -155,12 +159,14 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   };
 
-  const renderCartItem = (cart) => {
+  const renderCartItem = (cartItems) => {
     const cartBody = document.querySelector("#cart-body");
     const totalProductsCart = document.querySelector("span#total");
 
-    if (cart.length <= 0) {
-      return (cartBody.innerHTML = `
+    cartBody.innerHTML = "";
+
+    if (cartItems.length === 0) {
+      cartBody.innerHTML = `
       <div class="cart-body-empty ">
         <h5>
           El carrito esta vacio!
@@ -168,16 +174,18 @@ document.addEventListener("DOMContentLoaded", function () {
         <p>agrega productos para poder comprar</p>
         <button>Ir a comprar</button>
       </div>
-      `);
+      `;
     }
 
-    const listCartProduct = document.createElement("ul");
-    cartBody.innerHTML = "";
-    cart.forEach((cartItem) => {
-      listCartProduct.innerHTML += ` 
-      <li class="cart-item" data-id=${cartItem.id}>
-        <img
-          src='${cartItem.image}'
+    const listCartItems = document.createElement("ul");
+
+    cartItems.forEach((cartItem) => {
+      const itemCartProduct = document.createElement("li");
+
+      itemCartProduct.classList.add("cart-item");
+      itemCartProduct.setAttribute("data-id", cartItem.id);
+      itemCartProduct.innerHTML = `<img
+          src="${cartItem.image}"
           alt="${cartItem.title}"
         />
         <div class="cart-list-product">
@@ -185,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
           <p>${cartItem.price.toLocaleString()}</p>
 
           <div class="cart-item-product">
-            <button class="cart-btn-control" data-control="remove">
+            <button class="cart-btn-control ${cartItem.count === 1 ? "inactive" : ""}" data-control="remove">
               <span>
                 <i class="fa-solid fa-minus"></i>
               </span>
@@ -202,44 +210,50 @@ document.addEventListener("DOMContentLoaded", function () {
           <span>
             <i class="fa-solid fa-trash-can"></i>
           </span>
-        </button>
-      </li>`;
+      </button>`;
+
+      listCartItems.appendChild(itemCartProduct);
     });
-    cartBody.appendChild(listCartProduct);
-    totalProductsCart.innerHTML = cart
+
+    cartBody.appendChild(listCartItems);
+
+    totalProductsCart.innerHTML = cartItems
       .reduce((acc, current) => acc + current.price * current.count, 0)
       .toLocaleString();
 
     actionCart(document.querySelectorAll(".cart-btn-control"));
     deleteCartItem(document.querySelectorAll(".cart-delete-item"));
-    contatcForWstpp(cart);
+    contatcForWstpp(cartItems);
   };
 
   const actionCart = (cartElements) => {
     cartElements.forEach((btnControl) => {
-      if (btnControl) {
-        btnControl.addEventListener("click", function (e) {
-          if (btnControl.getAttribute("data-control") === "add") {
-            const element = e.target.closest(".cart-item");
-            const indexCartItem = cart.findIndex(
-              (cartItem) => cartItem.id === element.dataset.id,
-            );
-            cart[indexCartItem].count++;
-          } else {
-            const element = e.target.closest(".cart-item");
-            const indexCartItem = cart.findIndex(
-              (cartItem) => cartItem.id === element.dataset.id,
-            );
-            cart[indexCartItem].count--;
+      const btnRemove = cartElements[0];
+      btnControl.addEventListener("click", function (e) {
+        const element = e.target.closest(".cart-item");
+        const dataControl = btnControl.getAttribute("data-control");
+        if (dataControl === "add") {
+          const indexCartItem = cart.findIndex(
+            (cartItem) => cartItem.id === element.dataset.id,
+          );
 
-            if (cart[indexCartItem].count <= 0) {
-              cart.splice(indexCartItem, 1);
-            }
+          btnRemove.classList.remove("inactive");
+          cart[indexCartItem].count++;
+        }
+
+        if (dataControl === "remove") {
+          const indexCartItem = cart.findIndex(
+            (cartItem) => cartItem.id === element.dataset.id,
+          );
+
+          if (cart[indexCartItem].count === 1) {
+            return classList.add("inactive");
           }
+          cart[indexCartItem].count--;
+        }
 
-          renderCartItem(cart);
-        });
-      }
+        renderCartItem(cart);
+      });
     });
   };
 
@@ -247,9 +261,7 @@ document.addEventListener("DOMContentLoaded", function () {
     cartDeleteItem.forEach((btnDeleteCart) => {
       btnDeleteCart.addEventListener("click", function (e) {
         const liCartItem = e.target.closest(".cart-item");
-        const indexCartItem = cart.findIndex(
-          (cartItem) => cartItem.id === liCartItem.dataset.id,
-        );
+        const indexCartItem = cart.indexOf(liCartItem.id);
         cart.splice(indexCartItem, 1);
         renderCartItem(cart);
       });
@@ -261,14 +273,6 @@ document.addEventListener("DOMContentLoaded", function () {
       .querySelector("#finaly-shopping")
       .addEventListener("click", async function () {
         if (cart.length === 0) return toast.message("cart empty");
-        if ((!"geolocation") in navigator) {
-          return alert(
-            "Tu navegador no soporta el acceso a la ubicación. Intenta con otro",
-          );
-        }
-
-        
-
 
         const result = await toast.confirm("Excelente!, Cual es tu nombre?");
 

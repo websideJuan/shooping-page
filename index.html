@@ -81,7 +81,10 @@
             </div>
           </div>
           <div class="cart-footer" id="cart-footer">
-            <div class="cart-footer-content" style="display: flex; align-items: center; gap: 10px;">
+            <div
+              class="cart-footer-content"
+              style="display: flex; align-items: center; gap: 10px"
+            >
               <p class="cart-text">Total: <span id="total">0</span></p>
               <button class="cart-btn-finaly" id="finaly-shopping">
                 Finalizar compra
@@ -128,6 +131,12 @@
               <button>Leer más</button>
             </div>
           </div>
+
+          <div class="carousel-dots">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
         </div>
       </section>
       <section class="category">
@@ -167,11 +176,23 @@
           <h2 class="product-title" style="text-align: center">
             Nuestro catalogo
           </h2>
-          <div class="product-category" style="justify-content: center; flex-wrap: wrap;">
-            <button class="product-btn-category active" data-filter="men's clothing">Hombres</button>
-            <button class="product-btn-category" data-filter="women's clothing">Mujeres</button>
-            <button class="product-btn-category" data-filter="electronics">Electronica</button>
-            <button class="product-btn-category" data-filter="jewelery">Joyeria</button>
+          <div
+            class="product-category"
+            style="justify-content: center; flex-wrap: wrap"
+          >
+            <button class="product-btn-category active" data-filter="all">All</button>
+            <button class="product-btn-category" data-filter="men's clothing">
+              Hombres
+            </button>
+            <button class="product-btn-category" data-filter="women's clothing">
+              Mujeres
+            </button>
+            <button class="product-btn-category" data-filter="electronics">
+              Electronica
+            </button>
+            <button class="product-btn-category" data-filter="jewelery">
+              Joyeria
+            </button>
           </div>
           <div class="products" id="container-product"></div>
         </div>
