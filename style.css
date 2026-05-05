@@ -24,6 +24,10 @@ body {
   font-style: normal;
 }
 
+body.menu-open {
+  overflow: hidden;
+}
+
 button {
   padding: 5px 8px;
   font-weight: bold;

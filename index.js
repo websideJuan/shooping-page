@@ -51,17 +51,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function showCart() {
     const cartCollapse = document.getElementById("cart-collapse");
+    const cartContent = cartCollapse.querySelector(".cart-content");
     if (cartCollapse.classList.contains("show")) {
       cartCollapse.style.transitionDelay = ".6s";
-      cartCollapse.children[0].style.transitionDelay = ".0s";
+      cartContent.style.transitionDelay = ".0s";
       cartCollapse.classList.remove("show");
-      document.body.style.overflowY = "auto";
     } else {
       cartCollapse.style.transitionDelay = ".0s";
-      cartCollapse.children[0].style.transitionDelay = ".6s";
+      cartContent.style.transitionDelay = ".6s";
       cartCollapse.classList.add("show");
-      document.body.style.overflowY = "hidden";
     }
+    document.body.classList.toggle("menu-open");
   }
 
   const renderProductItem = (filter = "all") => {
@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const btnToAdd = e.target;
       btnToAdd.style.backgroundColor = "rosybrown";
       btnToAdd.style.color = "white";
+
       addToCart(e.target.dataset.id);
 
       setTimeout(() => {
@@ -159,19 +160,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const renderCartItem = (cartItems) => {
     const cartBody = document.querySelector("#cart-body");
-    const totalProductsCart = document.querySelector("span#total");
 
     cartBody.innerHTML = "";
 
     if (cartItems.length === 0) {
       cartBody.innerHTML = `
-      <div class="cart-body-empty ">
-        <h5>
-          El carrito esta vacio!
-        </h5>
-        <p>agrega productos para poder comprar</p>
-        <button>Ir a comprar</button>
-      </div>
+        <div class="cart-body-empty ">
+          <h5>
+            El carrito esta vacio!
+          </h5>
+          <p>agrega productos para poder comprar</p>
+          <button>Ir a comprar</button>
+        </div>
       `;
     }
 
@@ -182,114 +182,119 @@ document.addEventListener("DOMContentLoaded", function () {
 
       itemCartProduct.classList.add("cart-item");
       itemCartProduct.setAttribute("data-id", cartItem.id);
-      itemCartProduct.innerHTML = `<img
+
+      itemCartProduct.innerHTML = `
+        <img
           src="${cartItem.image}"
           alt="${cartItem.title}"
         />
+
         <div class="cart-list-product">
           <h5 style="font-size: .8rem; font-weight: thin;">${cartItem.title}</h5>
-          <p>${(cartItem.price * cartItem.count).toLocaleString()} <span style="color: #333; font-weight: 300; letter-spacing: 2px;">(X${cartItem.count})</span></p>
+          <p>${(cartItem.price * cartItem.count).toLocaleString()} 
+            <span style="color: #333; font-weight: 300; letter-spacing: 2px;">
+              (X${cartItem.count})
+            </span>
+          </p>
 
           <div class="cart-item-product">
-            <button class="cart-btn-control ${cartItem.count === 1 ? "inactive" : ""}" data-control="remove">
+            <button class="cart-btn-control ${
+              cartItem.count === 1 ? "inactive" : ""
+            }
+              " data-control="decrement">
               <span>
                 <i class="fa-solid fa-minus"></i>
               </span>
             </button>
             <p>${cartItem.count}</p>
-            <button class="cart-btn-control" data-control="add">
+            <button class="cart-btn-control" data-control="increment">
               <span>
                 <i class="fa-solid fa-plus"></i>
               </span>
             </button>
           </div>
         </div>
-        <button class="cart-delete-item" style="background-color: transparent; border: none; margin-left: auto; margin-top: auto;">
+
+        <button class="cart-delete-item" data-control="delete" style="background-color: transparent; border: none; margin-left: auto; margin-top: auto;">
           <span>
             <i class="fa-solid fa-trash-can"></i>
           </span>
-      </button>`;
+        </button>
+      `;
 
       listCartItems.appendChild(itemCartProduct);
     });
 
     cartBody.appendChild(listCartItems);
 
-    totalProductsCart.innerHTML = cartItems
-      .reduce((acc, current) => acc + current.price * current.count, 0)
-      .toLocaleString();
+    updateTotalPrice();
+    addCountElementInCart();
+  };
 
+  document.querySelector(".cart-body").addEventListener("click", function (e) {
+    updateCountCartItem(e);
+  });
+
+  const updateCountCartItem = (e) => {
+    const liCartItem = e.target.closest(".cart-item");
+    const dataControl =
+      e.target.parentElement.parentElement.getAttribute("data-control");
+
+    const indexCartItem = cart.findIndex(
+      (cartItem) => cartItem.id === liCartItem.dataset.id,
+    );
+
+    if (dataControl === "increment") {
+      cart[indexCartItem].count++;
+    }
+
+    if (dataControl === "decrement") {
+      cart[indexCartItem].count--;
+    }
+
+    if (dataControl === "delete") {
+      cart.splice(indexCartItem, 1);
+    }
+
+    renderCartItem(cart);
+  };
+
+  const addCountElementInCart = () => {
     const btnCartShow = document.getElementById("btn-cart");
 
-    cartItems.length <= 0
+    cart.length <= 0
       ? btnCartShow.classList.remove("cart-index-item")
       : btnCartShow.classList.add("cart-index-item");
 
-    btnCartShow.setAttribute("data-index", cartItems.length);
-
-    actionCart(document.querySelectorAll(".cart-btn-control"));
-    deleteCartItem(document.querySelectorAll(".cart-delete-item"));
-    contatcForWstpp(cartItems);
+    btnCartShow.setAttribute("data-index", cart.length);
   };
 
-  const actionCart = (cartElements) => {
-    cartElements.forEach((btnControl) => {
-      btnControl.addEventListener("click", function (e) {
-        const element = e.target.closest(".cart-item");
-        const dataControl = btnControl.getAttribute("data-control");
-        if (dataControl === "add") {
-          const indexCartItem = cart.findIndex(
-            (cartItem) => cartItem.id === element.dataset.id,
-          );
-
-          cart[indexCartItem].count++;
-        }
-
-        if (dataControl === "remove") {
-          const indexCartItem = cart.findIndex(
-            (cartItem) => cartItem.id === element.dataset.id,
-          );
-          cart[indexCartItem].count--;
-        }
-
-        renderCartItem(cart);
-      });
-    });
+  const updateTotalPrice = () => {
+    const totalProductsCart = document.querySelector("span#total");
+    totalProductsCart.innerHTML = cart
+      .reduce((acc, current) => acc + current.price * current.count, 0)
+      .toLocaleString();
   };
 
-  const deleteCartItem = (cartDeleteItem) => {
-    cartDeleteItem.forEach((btnDeleteCart) => {
-      btnDeleteCart.addEventListener("click", function (e) {
-        const liCartItem = e.target.closest(".cart-item");
-        const indexCartItem = cart.findIndex(
-          (cartItem) => cartItem.id === liCartItem.dataset.id,
-        );
-        cart.splice(indexCartItem, 1);
-        renderCartItem(cart);
-      });
-    });
-  };
+  document
+    .querySelector("#finaly-shopping")
+    .addEventListener("click", async function () {
+      if (cart.length === 0) return toast.message("cart empty");
 
-  const contatcForWstpp = (cart) => {
-    document
-      .querySelector("#finaly-shopping")
-      .addEventListener("click", async function () {
-        if (cart.length === 0) return toast.message("cart empty");
+      const result = await toast.confirm("Excelente!\n, Cual es tu nombre?");
 
-        const result = await toast.confirm("Excelente!\n, Cual es tu nombre?");
+      if (!result.confirm) return;
 
-        if (!result.confirm) return;
+      const productList = cart.map((product) => `- ${product.title}`);
+      const subTotal = cart.reduce(
+        (acc, current) => acc + Number(current.price) * current.count,
+        0,
+      );
 
-        const productList = cart.map((product) => `- ${product.title}`);
-        const subTotal = cart.reduce(
-          (acc, current) => acc + Number(current.price) * current.count,
-          0,
-        );
+      const total = subTotal * 1.19;
 
-        const total = subTotal * 1.19;
-
-        const telefono = "56929506564";
-        const mensaje = `
+      const telefono = "56929506564";
+      const mensaje = `
         *Hola soy ${result.value} y estoy interesado en comprar!*
 
         ${productList.length < 2 ? "Producto" : "Productos"}:
@@ -299,8 +304,7 @@ document.addEventListener("DOMContentLoaded", function () {
         Total: *${total.toLocaleString()}*
         `;
 
-        const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-        window.open(url, "_blank");
-      });
-  };
+      const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, "_blank");
+    });
 });
